@@ -5,16 +5,22 @@
 #include <QDebug>
 #include <QThread>
 #include <unistd.h>
+#include <QUdpSocket>
+#include "myudp.h"
+
 
 class Worker: public QObject {
     Q_OBJECT
 public:
-    Worker(QString &data) : mData(data) {}
+    Worker(QString &data) : mData(data) {
+
+    }
 
 public slots:
     void process() {
-        qDebug() << "Process's Thread : " << QThread::currentThreadId();
+        // create a QUDP socket
 
+        qDebug() << "Process's Thread : " << QThread::currentThreadId();
 
         for (int var = 0; var < 5; ++var) {
             mData = QString::number(var);
@@ -38,7 +44,9 @@ class WorkerInterface : public QObject {
 public:
     WorkerInterface() : mWorker(mData) {
         mWorker.moveToThread(&mThread);
+
         connect(this, &WorkerInterface::process, &mWorker, &Worker::process);
+
         connect(&mWorker, &Worker::processFinished, [this]{
             qDebug() << "ProcessFinished in  : " << QThread::currentThreadId();
             emit dataChanged();
